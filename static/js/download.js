@@ -12,16 +12,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log("download.js est chargé et prêt.");
 
-    downloadForm.addEventListener('submit', function(e) {
+    downloadForm.addEventListener('submit', async function(e) {
         e.preventDefault(); // Empêche le rechargement de la page
         console.log("Formulaire de téléchargement soumis.");
 
         const ytbUrl = document.getElementById('ytb_url').value.trim();
-        console.log(`URL YouTube entrée: ${ytbUrl}`);
+        console.log(`URL entrée: ${ytbUrl}`);
 
         if (!ytbUrl) {
-            resultDownloadDiv.innerHTML = `<div class="alert alert-danger" role="alert"><strong>Erreur:</strong> Veuillez entrer une URL YouTube valide.</div>`;
-            console.warn("URL YouTube non valide.");
+            resultDownloadDiv.innerHTML = `<div class="alert alert-danger" role="alert"><strong>Erreur:</strong> Veuillez entrer une URL valide.</div>`;
+            console.warn("URL non valide.");
             return;
         }
 
@@ -39,57 +39,49 @@ document.addEventListener('DOMContentLoaded', function() {
             Téléchargement...
         `;
 
-        // Envoyer la requête avec fetch
-        fetch(`/api/download?ytb_url=${encodeURIComponent(ytbUrl)}`)
-            .then(response => {
-                console.log('Réponse reçue:', response);
-                if (!response.ok) {
-                    return response.json().then(errData => { throw new Error(errData.message || 'Erreur lors du téléchargement.'); });
-                }
-                const disposition = response.headers.get('Content-Disposition');
-                let filename = 'video.mp4'; // Nom par défaut
-                if (disposition && disposition.includes('attachment')) {
-                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    const matches = filenameRegex.exec(disposition);
-                    if (matches != null && matches[1]) {
-                        filename = matches[1].replace(/['"]/g, '');
-                    }
-                }
-                console.log('Nom de fichier déterminé:', filename);
-                return response.blob().then(blob => {
-                    console.log('Blob reçu:', blob);
-                    return { blob, filename };
-                });
-            })
-            .then(({ blob, filename }) => {
-                // Vérifiez que le blob a une taille non nulle
-                if (blob.size === 0) {
-                    throw new Error('Le fichier téléchargé est vide.');
-                }
-
-                // Créer un lien temporaire pour télécharger le fichier
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-
-                // Afficher le message de succès
-                resultDownloadDiv.innerHTML = `<div class="alert alert-success" role="alert">Téléchargement terminé. Le fichier a été enregistré.</div>`;
-                console.log('Téléchargement réussi.');
-            })
-            .catch(err => {
-                console.error('Erreur lors du téléchargement:', err);
-                resultDownloadDiv.innerHTML = `<div class="alert alert-danger" role="alert"><strong>Erreur:</strong> ${err.message}</div>`;
-            })
-            .finally(() => {
-                // Rétablir le contenu original du bouton et réactiver le bouton
-                downloadBtn.disabled = false;
-                downloadBtn.innerHTML = originalBtnContent;
-                console.log("Bouton réactivé et contenu original restauré.");
+        try {
+            const response = await fetch(`/api/download?ytb_url=${encodeURIComponent(ytbUrl)}`, {
+                method: 'GET',
+                mode: 'cors', // Assure que CORS est utilisé
             });
+
+            console.log('Réponse reçue:', response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erreur lors du téléchargement.');
+            }
+
+            const data = await response.json();
+            console.log('Données reçues:', data);
+
+            if (data.status === 'success' && data.download_url) {
+                // Créer un lien de téléchargement
+                const downloadLink = document.createElement('a');
+                downloadLink.href = data.download_url;
+                downloadLink.textContent = 'Télécharger la vidéo';
+                downloadLink.className = 'btn btn-success mt-3';
+                downloadLink.target = '_blank'; // Ouvre dans un nouvel onglet
+
+                // Vider la div et ajouter le lien
+                resultDownloadDiv.innerHTML = `
+                    <div class="alert alert-success" role="alert">
+                        Téléchargement terminé. Cliquez sur le lien ci-dessous pour télécharger la vidéo.
+                    </div>
+                `;
+                resultDownloadDiv.appendChild(downloadLink);
+                console.log('Lien de téléchargement affiché.');
+            } else {
+                throw new Error(data.message || 'Erreur lors du téléchargement.');
+            }
+        } catch (err) {
+            console.error('Erreur lors du téléchargement:', err);
+            resultDownloadDiv.innerHTML = `<div class="alert alert-danger" role="alert"><strong>Erreur:</strong> ${err.message}</div>`;
+        } finally {
+            // Rétablir le contenu original du bouton et réactiver le bouton
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = originalBtnContent;
+            console.log("Bouton réactivé et contenu original restauré.");
+        }
     });
 });

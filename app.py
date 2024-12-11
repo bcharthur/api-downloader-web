@@ -30,7 +30,13 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
-CORS(app)  # Activer CORS pour toutes les routes
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "expose_headers": "Content-Disposition"
+    }
+})
+
 
 # Configuration
 DOWNLOAD_FOLDER = os.path.join(app.root_path, 'downloads')
@@ -94,6 +100,7 @@ def index():
 @app.route('/downloads/<path:filename>', methods=['GET'])
 def download_file(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)  # Remplacez debug=True par False en production
