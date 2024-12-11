@@ -1,12 +1,11 @@
 # blueprints/download.py
 
-from flask import Blueprint, request, jsonify, send_file, current_app, Response
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, url_for
 from flask_cors import cross_origin
 import logging
 import yt_dlp
 import os
 import glob
-import flask  # Import du module Flask
 
 download_bp = Blueprint('download_bp', __name__)
 
@@ -69,38 +68,12 @@ def download_video():
         filename = os.path.basename(download_path)
         logging.info(f"[DOWNLOAD] Nom du fichier à envoyer: {filename}")
 
-        # Vérifier les permissions de lecture
-        if not os.access(download_path, os.R_OK):
-            logging.error(f"[DOWNLOAD] Le fichier téléchargé n'est pas accessible en lecture: {download_path}")
-            return jsonify({'status': 'error', 'message': 'Le fichier téléchargé n\'est pas accessible.'}), 500
+        # Générer l'URL de téléchargement
+        download_url = url_for('download_file', filename=filename, _external=True)
+        logging.info(f"[DOWNLOAD] URL de téléchargement: {download_url}")
 
-        logging.info(f"[DOWNLOAD] Envoi du fichier: {download_path}")
-
-        # Obtenir la version de Flask correctement
-        flask_version = flask.__version__
-        logging.info(f"[DOWNLOAD] Version de Flask: {flask_version}")
-
-        # Déterminer la méthode d'envoi en fonction de la version de Flask
-        major_version = int(flask_version.split('.')[0])
-        if major_version >= 2:
-            response = send_file(
-                download_path,
-                as_attachment=True,
-                download_name=filename,
-                mimetype='video/mp4',
-                conditional=False
-            )
-        else:
-            response = send_file(
-                download_path,
-                as_attachment=True,
-                attachment_filename=filename,  # Utiliser 'attachment_filename' pour les versions < 2.0
-                mimetype='video/mp4',
-                conditional=False
-            )
-
-        logging.info(f"[DOWNLOAD] En-têtes de réponse: {response.headers}")
-        return response
+        # Renvoyer l'URL de téléchargement dans la réponse JSON
+        return jsonify({'status': 'success', 'download_url': download_url}), 200
 
     except yt_dlp.utils.DownloadError as e:
         logging.error(f"[DOWNLOAD] yt-dlp Error: {e}")
