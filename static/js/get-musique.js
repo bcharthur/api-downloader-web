@@ -10,7 +10,11 @@ $(document).ready(function() {
             return;
         }
 
-        $('#downloadMusiqueBtn').prop('disabled', true).text('Téléchargement...');
+        // Désactiver le bouton et ajouter le spinner
+        $('#downloadMusiqueBtn').prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Téléchargement...
+        `);
 
         // Fonction pour déclencher le téléchargement
         const downloadMusique = function(audioUrl) {
@@ -21,8 +25,10 @@ $(document).ready(function() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            $('#downloadMusiqueBtn').prop('disabled', false).text('Télécharger la musique');
             showToast('Succès', 'Musique téléchargée avec succès!', 'success');
+
+            // Réactiver le bouton et restaurer le texte
+            $('#downloadMusiqueBtn').prop('disabled', false).html('Télécharger la musique');
         };
 
         // Effectuer la requête pour obtenir l'URL de l'audio
@@ -35,13 +41,13 @@ $(document).ready(function() {
                     downloadMusique(response.audio_url);
                 } else if (response.error) {
                     showToast('Erreur', response.error, 'danger');
-                    $('#downloadMusiqueBtn').prop('disabled', false).text('Télécharger la musique');
+                    $('#downloadMusiqueBtn').prop('disabled', false).html('Télécharger la musique');
                 }
             },
             error: function(xhr) {
                 const error = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Erreur inconnue';
                 showToast('Erreur', error, 'danger');
-                $('#downloadMusiqueBtn').prop('disabled', false).text('Télécharger la musique');
+                $('#downloadMusiqueBtn').prop('disabled', false).html('Télécharger la musique');
             }
         });
     });

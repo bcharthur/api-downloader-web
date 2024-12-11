@@ -7,7 +7,12 @@ $(document).ready(function() {
     $('#getThumbnailForm').on('submit', function(e) {
         e.preventDefault();
         const url = $('#thumbnail_url').val();
-        $('#getThumbnailBtn').prop('disabled', true).text('Chargement...');
+
+        // Désactiver le bouton et ajouter le spinner
+        $('#getThumbnailBtn').prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Chargement...
+        `);
 
         $.ajax({
             url: '/api/get_thumbnail',
@@ -26,7 +31,8 @@ $(document).ready(function() {
                 showToast('Erreur', error, 'danger');
             },
             complete: function() {
-                $('#getThumbnailBtn').prop('disabled', false).text('Afficher la miniature');
+                // Rétablir le contenu original du bouton et réactiver le bouton
+                $('#getThumbnailBtn').prop('disabled', false).html('Obtenir la miniature');
             }
         });
     });
@@ -40,7 +46,11 @@ $(document).ready(function() {
             return;
         }
 
-        $('#downloadThumbnailBtn').prop('disabled', true).text('Téléchargement...');
+        // Désactiver le bouton et ajouter le spinner
+        $('#downloadThumbnailBtn').prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Téléchargement...
+        `);
 
         // Fonction pour déclencher le téléchargement
         const downloadThumbnail = function(thumbnailUrl) {
@@ -51,8 +61,10 @@ $(document).ready(function() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            $('#downloadThumbnailBtn').prop('disabled', false).text('Télécharger la miniature');
             showToast('Succès', 'Miniature téléchargée avec succès!', 'success');
+
+            // Réactiver le bouton et restaurer le texte
+            $('#downloadThumbnailBtn').prop('disabled', false).html('Télécharger la miniature');
         };
 
         if (currentThumbnailUrl) {
@@ -70,13 +82,13 @@ $(document).ready(function() {
                         downloadThumbnail(response.thumbnail_url);
                     } else if (response.error) {
                         showToast('Erreur', response.error, 'danger');
-                        $('#downloadThumbnailBtn').prop('disabled', false).text('Télécharger la miniature');
+                        $('#downloadThumbnailBtn').prop('disabled', false).html('Télécharger la miniature');
                     }
                 },
                 error: function(xhr) {
                     const error = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Erreur inconnue';
                     showToast('Erreur', error, 'danger');
-                    $('#downloadThumbnailBtn').prop('disabled', false).text('Télécharger la miniature');
+                    $('#downloadThumbnailBtn').prop('disabled', false).html('Télécharger la miniature');
                 }
             });
         }
