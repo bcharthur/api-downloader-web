@@ -10,22 +10,30 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    console.log("download.js est chargé et prêt.");
+
     downloadForm.addEventListener('submit', function(e) {
         e.preventDefault(); // Empêche le rechargement de la page
+        console.log("Formulaire de téléchargement soumis.");
 
-        const ytbUrl = document.getElementById('download_url').value.trim();
+        const ytbUrl = document.getElementById('ytb_url').value.trim();
+        console.log(`URL YouTube entrée: ${ytbUrl}`);
 
         if (!ytbUrl) {
             resultDownloadDiv.innerHTML = `<div class="alert alert-danger" role="alert"><strong>Erreur:</strong> Veuillez entrer une URL YouTube valide.</div>`;
+            console.warn("URL YouTube non valide.");
             return;
         }
 
         // Afficher le message de téléchargement en cours
         resultDownloadDiv.innerHTML = `<div class="alert alert-info" role="alert">Téléchargement en cours...</div>`;
+        console.log("Message de téléchargement en cours affiché.");
 
         // Désactiver le bouton et ajouter le spinner
         downloadBtn.disabled = true;
         const originalBtnContent = downloadBtn.innerHTML; // Sauvegarder le contenu original
+        console.log("Désactivation du bouton et ajout du spinner.");
+
         downloadBtn.innerHTML = `
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Téléchargement...
@@ -81,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Rétablir le contenu original du bouton et réactiver le bouton
                 downloadBtn.disabled = false;
                 downloadBtn.innerHTML = originalBtnContent;
+                console.log("Bouton réactivé et contenu original restauré.");
             });
     });
 });

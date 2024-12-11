@@ -1,13 +1,13 @@
 // static/js/main.js
 
-// Fonction pour afficher les toasts
 function showToast(title, message, type) {
     const toastId = `toast${Date.now()}`;
-    const toastHtml = `
+    const toastHTML = `
         <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
-            <div class="toast-header bg-${type} text-white">
+            <div class="toast-header">
                 <strong class="mr-auto">${title}</strong>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <small class="text-muted">Maintenant</small>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Fermer">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -16,10 +16,13 @@ function showToast(title, message, type) {
             </div>
         </div>
     `;
-    $('#toastContainer').append(toastHtml);
-    $(`#${toastId}`).toast('show');
-    // Supprimer le toast après la disparition
-    $(`#${toastId}`).on('hidden.bs.toast', function () {
+    $('#toastContainer').append(toastHTML);
+    $(`#${toastId}`).toast('show').on('hidden.bs.toast', function () {
         $(this).remove();
     });
+
+    // Modifier le style en fonction du type (success, danger, info, etc.)
+    if (type) {
+        $(`#${toastId} .toast-header`).addClass(`bg-${type} text-white`);
+    }
 }
