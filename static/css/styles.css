@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-    width: 80%;
+    /* Supprimé: width: 80%; */
     margin: auto;
     overflow: hidden;
     padding: 30px;
@@ -31,7 +31,8 @@ label {
     color: #555;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="url"] {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
@@ -40,6 +41,7 @@ input[type="text"] {
 .buttons {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petits écrans */
 }
 
 button {
@@ -49,6 +51,13 @@ button {
     color: #fff;
     cursor: pointer;
     border-radius: 5px;
+    margin-bottom: 10px; /* Espacement en bas pour les petits écrans */
+    flex: 1 1 auto; /* Permet aux boutons de s'étendre */
+    margin-right: 10px;
+}
+
+button:last-child {
+    margin-right: 0;
 }
 
 button:hover {
@@ -60,4 +69,17 @@ button:hover {
     padding: 10px;
     background: #e9ecef;
     border-radius: 5px;
+}
+
+/* Ajustements spécifiques pour les petits écrans */
+@media (max-width: 576px) {
+    .container {
+        padding: 15px;
+        margin-top: 20px;
+    }
+
+    button {
+        width: 100%;
+        margin-right: 0;
+    }
 }
